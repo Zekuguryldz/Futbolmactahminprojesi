@@ -1,5 +1,7 @@
 # ⚽ Futbol Maç Sonucu Tahmin Projesi
 
+🔗 **Canlı Demo:** [futbolmactahminprojesi-bxrx8x9jyn9yplm7m2jawb.streamlit.app](https://futbolmactahminprojesi-bxrx8x9jyn9yplm7m2jawb.streamlit.app/)
+
 Uluslararası futbol maçı verilerinden yola çıkarak **"ev sahibi takım kazanır mı?"** sorusunu makine öğrenmesiyle tahmin eden uçtan uca bir proje. Veri yükleme → keşifsel analiz (EDA) → istatistik → görselleştirme → özellik mühendisliği → model eğitimi → metrik karşılaştırma → özellik önemi → karar ağacı görselleştirme → özet rapor adımlarından oluşan 11 adımlı bir pipeline ve bunu interaktif kullanmak için bir **Streamlit arayüzü** içerir.
 
 ## Kullanılan Modeller
@@ -85,3 +87,7 @@ DOKUMAN.md             Adım adım detaylı teknik dokümantasyon
 - `Home_Enc` / `Away_Enc` (ham takım ID'si) özellikleri hâlâ `ortak.py` içinde hesaplanır ve `ESKI_OZELLIKLER` olarak saklanır (Adım 12'deki kıyaslama deneyi için), ancak canlı pipeline artık bunları değil, Elo/form/h2h tabanlı özellikleri kullanır.
 - Random Forest ve Karar Ağacı, overfitting karşılaştırmasının adil olması için aynı `max_depth` değeriyle eğitilir.
 - Elo/form/h2h hesaplaması kronolojik sırada yapılır; her satır sadece o maçtan ÖNCEKİ bilgiyi kullanır (data leakage yok).
+
+## Geliştirme Notu
+
+Bu projenin geliştirilmesinde (vibe coding) **Claude (Anthropic)** desteği alınmıştır.
