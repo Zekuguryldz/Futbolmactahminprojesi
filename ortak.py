@@ -90,30 +90,40 @@ def ozellik_muhendisligi_ekle(df, k=ELO_K, pencere=FORM_PENCERE):
     return df, guncel_durum
 
 
+def _takim_encoder_olustur(df):
+    """Home Team ve Away Team icin TEK bir LabelEncoder fit eder (ikisinin
+    birlesimi uzerinde). Boylece ayni takim, ev sahibi ya da deplasman
+    olmasindan bagimsiz olarak hep ayni sayiyi alir — eskiden Home/Away icin
+    ayri ayri fit_transform cagrilmasi, ayni takima farkli ID atanmasina
+    (sahte/tutarsiz bir sinyale) yol aciyordu."""
+    le = LabelEncoder()
+    le.fit(pd.concat([df["Home Team"], df["Away Team"]]))
+    return le
+
+
 def veri_yukle(dosya=VERI_DOSYASI, k=ELO_K, pencere=FORM_PENCERE):
     df = pd.read_csv(dosya)
     df["Tur_Tipi"] = df["Tournament"].apply(tur_tipi)
-    le = LabelEncoder()
-    df["Home_Enc"] = le.fit_transform(df["Home Team"])
-    df["Away_Enc"] = le.fit_transform(df["Away Team"])
+    le = _takim_encoder_olustur(df)
+    df["Home_Enc"] = le.transform(df["Home Team"])
+    df["Away_Enc"] = le.transform(df["Away Team"])
     df["Target"] = (df["Home Goals"] > df["Away Goals"]).astype(int)
     df, _ = ozellik_muhendisligi_ekle(df, k=k, pencere=pencere)
     return df
 
 
 def veri_ve_encoderlar_yukle(dosya=VERI_DOSYASI):
-    """veri_yukle ile aynı mantık, ek olarak Home/Away LabelEncoder nesnelerini ve
+    """veri_yukle ile aynı mantık, ek olarak takım LabelEncoder'ını ve
     Elo/form/h2h'nin güncel (en son maç sonrası) durumunu da döner — tahmin
     arayüzlerinin yeni bir maç için özellik üretebilmesi için."""
     df = pd.read_csv(dosya)
     df["Tur_Tipi"] = df["Tournament"].apply(tur_tipi)
-    le_home = LabelEncoder()
-    le_away = LabelEncoder()
-    df["Home_Enc"] = le_home.fit_transform(df["Home Team"])
-    df["Away_Enc"] = le_away.fit_transform(df["Away Team"])
+    le = _takim_encoder_olustur(df)
+    df["Home_Enc"] = le.transform(df["Home Team"])
+    df["Away_Enc"] = le.transform(df["Away Team"])
     df["Target"] = (df["Home Goals"] > df["Away Goals"]).astype(int)
     df, guncel_durum = ozellik_muhendisligi_ekle(df)
-    return df, le_home, le_away, guncel_durum
+    return df, le, le, guncel_durum
 
 
 def tahmin_ozellikleri_hesapla(ev_takim, deplasman_takim, guncel_durum, stadyum, tur_tipi_kodu):

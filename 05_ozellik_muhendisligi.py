@@ -29,9 +29,13 @@ print(df["Tur_Tipi"].value_counts())
 print("  (2=FIFA/WC, 1=Kita Sampiyonasi, 0=Diger)")
 
 # --- Kategorik → Sayısal: LabelEncoder ---
+# Home/Away icin TEK bir encoder, ikisinin birlesimi uzerinde fit edilir.
+# Ayri ayri fit edilseydi, ayni takim ev sahibiyken/deplasmandayken farkli
+# bir sayi alirdi — bu da modele sahte/tutarsiz bir sinyal verirdi.
 le = LabelEncoder()
-df["Home_Enc"] = le.fit_transform(df["Home Team"])
-df["Away_Enc"] = le.fit_transform(df["Away Team"])
+le.fit(pd.concat([df["Home Team"], df["Away Team"]]))
+df["Home_Enc"] = le.transform(df["Home Team"])
+df["Away_Enc"] = le.transform(df["Away Team"])
 
 print("\n[LabelEncoder Örnek]")
 print(df[["Home Team", "Home_Enc", "Away Team", "Away_Enc"]].head(5).to_string(index=False))
