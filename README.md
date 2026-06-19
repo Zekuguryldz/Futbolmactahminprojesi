@@ -10,6 +10,17 @@ Uluslararası futbol maçı verilerinden yola çıkarak **"ev sahibi takım kaza
 
 Her üç model de aynı `max_depth` ve aynı train/test bölmesi ile adil şekilde karşılaştırılır; Accuracy, Precision, Recall, F1, AUC-ROC ve 5-fold Cross-Validation skorları raporlanır.
 
+## Özellikler (Features)
+
+Modeller, her maçtan ÖNCEKİ bilgiyle (leak-free, kronolojik) hesaplanan şu özelliklerle eğitilir:
+
+- **Elo_Fark** — ev sahibi ve deplasman takımının maç öncesi Elo rating farkı (en belirleyici özellik)
+- **Home_Form / Away_Form** — takımların son 5 maçtaki ortalama puanı
+- **H2H_Ev_Galibiyet_Orani** — bu eşleşmedeki geçmiş ev sahibi galibiyet oranı
+- **Home Stadium or Not**, **Tur_Tipi** — stadyum ve turnuva bilgisi
+
+`Adım 12` (`12_gelismis_ozellikler.py`), bu özelliklerin eski (sadece takım ID'si tabanlı) özellik setine göre Test Accuracy'yi ~%57-60'tan ~%69'a çıkardığını ölçen karşılaştırma deneyini içerir.
+
 ## Veri Setleri
 
 | Dosya | İçerik |
@@ -27,7 +38,7 @@ pip install -r requirements.txt
 
 ## Çalıştırma
 
-### Pipeline (11 adım, sırayla)
+### Pipeline (12 adım, sırayla)
 
 ```bash
 python3 01_veri_yukleme.py
@@ -41,9 +52,10 @@ python3 08_model_karsilastirma.py
 python3 09_ozellik_onemi.py
 python3 10_karar_agaci.py
 python3 11_ozet_rapor.py
+python3 12_gelismis_ozellikler.py
 ```
 
-Ortak veri hazırlık mantığı (`tur_tipi`, encoding, train/test split) `ortak.py` modülünde toplanmıştır; `05`–`11` arası adımlar bunu import eder.
+Ortak veri hazırlık mantığı (`tur_tipi`, Elo/form/h2h özellik mühendisliği, encoding, train/test split) `ortak.py` modülünde toplanmıştır; `06`–`12` arası adımlar bunu import eder.
 
 ### İnteraktif Arayüz (Streamlit)
 
@@ -60,15 +72,16 @@ streamlit run streamlit_app.py
 ## Proje Yapısı
 
 ```
-01-11_*.py          Pipeline adımları (sırayla çalıştırılır)
-ortak.py             Ortak veri hazırlık fonksiyonları (DRY)
-streamlit_app.py      İnteraktif web arayüzü
-*.csv                Veri setleri
-*.png                Pipeline çalıştırıldığında üretilen grafikler
-DOKUMAN.md            Adım adım detaylı teknik dokümantasyon
+01-12_*.py           Pipeline adımları (sırayla çalıştırılır)
+ortak.py              Ortak veri hazırlık + Elo/form/h2h özellik mühendisliği (DRY)
+streamlit_app.py       İnteraktif web arayüzü
+*.csv                 Veri setleri
+*.png                 Pipeline çalıştırıldığında üretilen grafikler
+DOKUMAN.md             Adım adım detaylı teknik dokümantasyon
 ```
 
 ## Notlar
 
-- `Home_Enc` / `Away_Enc` özellikleri `LabelEncoder` ile kodlanmıştır; takım isimleri arasında sıralı bir ilişki yoktur, bu basitlik amacıyla tercih edilmiş bir yaklaşımdır (One-Hot Encoding daha doğru bir alternatif olurdu).
+- `Home_Enc` / `Away_Enc` (ham takım ID'si) özellikleri hâlâ `ortak.py` içinde hesaplanır ve `ESKI_OZELLIKLER` olarak saklanır (Adım 12'deki kıyaslama deneyi için), ancak canlı pipeline artık bunları değil, Elo/form/h2h tabanlı özellikleri kullanır.
 - Random Forest ve Karar Ağacı, overfitting karşılaştırmasının adil olması için aynı `max_depth` değeriyle eğitilir.
+- Elo/form/h2h hesaplaması kronolojik sırada yapılır; her satır sadece o maçtan ÖNCEKİ bilgiyi kullanır (data leakage yok).

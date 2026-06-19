@@ -10,7 +10,10 @@ from sklearn.metrics import (
     roc_auc_score, roc_curve, confusion_matrix
 )
 from sklearn.model_selection import cross_val_score
-from ortak import veri_ve_encoderlar_yukle, ozellik_hedef_ayir, train_test_ayir, tur_tipi, OZELLIKLER
+from ortak import (
+    veri_ve_encoderlar_yukle, ozellik_hedef_ayir, train_test_ayir,
+    tur_tipi, tahmin_ozellikleri_hesapla, OZELLIKLER
+)
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -22,9 +25,9 @@ RENKLER = {"Karar Agaci": "#3498db", "Random Forest": "#2ecc71", "Lojistik Regre
 
 @st.cache_data
 def veri_hazirla():
-    df, le_home, le_away = veri_ve_encoderlar_yukle()
+    df, le_home, le_away, guncel_durum = veri_ve_encoderlar_yukle()
     df["Yil"] = pd.to_datetime(df["Date"]).dt.year
-    return df, le_home, le_away
+    return df, le_home, le_away, guncel_durum
 
 
 @st.cache_resource
@@ -39,7 +42,7 @@ def modelleri_egit(_X_train, _y_train):
     return modeller
 
 
-df, le_home, le_away = veri_hazirla()
+df, le_home, le_away, guncel_durum = veri_hazirla()
 X, y = ozellik_hedef_ayir(df)
 X_train, X_test, y_train, y_test = train_test_ayir(X, y)
 modeller = modelleri_egit(X_train, y_train)
@@ -70,12 +73,11 @@ with tab1:
         if ev_takim == deplasman_takim:
             st.warning("Ev sahibi ve deplasman takımı aynı olamaz.")
         else:
-            ozellik_df = pd.DataFrame([{
-                "Home_Enc": le_home.transform([ev_takim])[0],
-                "Away_Enc": le_away.transform([deplasman_takim])[0],
-                "Home Stadium or Not": 1 if stadyum == "Evet" else 0,
-                "Tur_Tipi": tur_tipi(turnuva),
-            }])[OZELLIKLER]
+            ozellik_df = tahmin_ozellikleri_hesapla(
+                ev_takim, deplasman_takim, guncel_durum,
+                stadyum=1 if stadyum == "Evet" else 0,
+                tur_tipi_kodu=tur_tipi(turnuva),
+            )
 
             model = modeller[model_secimi]
             olasilik = model.predict_proba(ozellik_df)[0][1]
@@ -85,7 +87,10 @@ with tab1:
             st.progress(float(olasilik))
             st.write(f"**{ev_takim}** kazanma olasılığı: **{olasilik:.1%}**  |  "
                      f"**{deplasman_takim}/Berabere** olasılığı: **{1 - olasilik:.1%}**")
-            st.caption(f"Model: {model_secimi} — Turnuva tipi kodu: {tur_tipi(turnuva)} "
+            h_elo = guncel_durum["elo"].get(ev_takim, 1500.0)
+            a_elo = guncel_durum["elo"].get(deplasman_takim, 1500.0)
+            st.caption(f"Model: {model_secimi} — Güncel Elo: {ev_takim}={h_elo:.0f}, "
+                       f"{deplasman_takim}={a_elo:.0f} — Turnuva tipi kodu: {tur_tipi(turnuva)} "
                        f"(0=Diğer, 1=Kıta Şampiyonası, 2=FIFA/Dünya Kupası)")
 
 # ============================================================
