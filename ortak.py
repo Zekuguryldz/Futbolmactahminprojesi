@@ -26,15 +26,17 @@ def tur_tipi(t):
     return 0
 
 
-def ozellik_muhendisligi_ekle(df):
-    """Elo rating, form (son 5 maç puanı) ve head-to-head özelliklerini kronolojik
+def ozellik_muhendisligi_ekle(df, k=ELO_K, pencere=FORM_PENCERE):
+    """Elo rating, form (son N maç puanı) ve head-to-head özelliklerini kronolojik
     sırada, leak-free şekilde (her satıra sadece o maçtan ÖNCEKİ bilgiyle) ekler.
+    `k` (Elo K-faktörü) ve `pencere` (form penceresi) hiperparametre aramasında
+    farklı değerlerle denenebilsin diye parametrik bırakıldı.
     Döndürülen `guncel_durum`, en son Elo/form/h2h değerlerini içerir — yeni bir
     maç için tahmin yaparken (örn. Streamlit arayüzü) kullanılır."""
     df = df.sort_values("Date").reset_index(drop=True)
 
     elo = defaultdict(lambda: ELO_BASLANGIC)
-    form = defaultdict(lambda: deque(maxlen=FORM_PENCERE))
+    form = defaultdict(lambda: deque(maxlen=pencere))
     h2h_ev_galibiyet = defaultdict(int)
     h2h_toplam = defaultdict(int)
 
@@ -63,8 +65,8 @@ def ozellik_muhendisligi_ekle(df):
             sonuc_h, puan_h, puan_a = 0.5, 1, 1
 
         beklenen_h = 1 / (1 + 10 ** ((a_elo - h_elo) / 400))
-        elo[h] = h_elo + ELO_K * (sonuc_h - beklenen_h)
-        elo[a] = a_elo + ELO_K * ((1 - sonuc_h) - (1 - beklenen_h))
+        elo[h] = h_elo + k * (sonuc_h - beklenen_h)
+        elo[a] = a_elo + k * ((1 - sonuc_h) - (1 - beklenen_h))
         form[h].append(puan_h)
         form[a].append(puan_a)
 
@@ -88,14 +90,14 @@ def ozellik_muhendisligi_ekle(df):
     return df, guncel_durum
 
 
-def veri_yukle(dosya=VERI_DOSYASI):
+def veri_yukle(dosya=VERI_DOSYASI, k=ELO_K, pencere=FORM_PENCERE):
     df = pd.read_csv(dosya)
     df["Tur_Tipi"] = df["Tournament"].apply(tur_tipi)
     le = LabelEncoder()
     df["Home_Enc"] = le.fit_transform(df["Home Team"])
     df["Away_Enc"] = le.fit_transform(df["Away Team"])
     df["Target"] = (df["Home Goals"] > df["Away Goals"]).astype(int)
-    df, _ = ozellik_muhendisligi_ekle(df)
+    df, _ = ozellik_muhendisligi_ekle(df, k=k, pencere=pencere)
     return df
 
 
