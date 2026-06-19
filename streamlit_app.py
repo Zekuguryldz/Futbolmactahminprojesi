@@ -159,7 +159,7 @@ with tab3:
         sonuclar[isim]["Overfit"] = sonuclar[isim]["Train Acc"] - sonuclar[isim]["Test Acc"]
 
     ozet = pd.DataFrame(sonuclar).T
-    st.dataframe(ozet.style.format("{:.4f}").background_gradient(cmap="YlGn", axis=0), use_container_width=True)
+    st.dataframe(ozet.style.format("{:.4f}").background_gradient(cmap="YlGn", axis=0), width="stretch")
 
     colA, colB = st.columns(2)
     with colA:
