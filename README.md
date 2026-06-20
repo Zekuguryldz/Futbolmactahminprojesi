@@ -1,8 +1,16 @@
+---
+title: Futbol Maç Tahmin Projesi
+emoji: ⚽
+colorFrom: blue
+colorTo: green
+sdk: gradio
+app_file: app.py
+pinned: false
+---
+
 # ⚽ Futbol Maç Sonucu Tahmin Projesi
 
-🔗 **Canlı Demo:** [futbolmactahminprojesi-bxrx8x9jyn9yplm7m2jawb.streamlit.app](https://futbolmactahminprojesi-bxrx8x9jyn9yplm7m2jawb.streamlit.app/)
-
-Uluslararası futbol maçı verilerinden yola çıkarak **"ev sahibi takım kazanır mı?"** sorusunu makine öğrenmesiyle tahmin eden uçtan uca bir proje. Veri yükleme → keşifsel analiz (EDA) → istatistik → görselleştirme → özellik mühendisliği → model eğitimi → metrik karşılaştırma → özellik önemi → karar ağacı görselleştirme → özet rapor adımlarından oluşan 11 adımlı bir pipeline ve bunu interaktif kullanmak için bir **Streamlit arayüzü** içerir.
+Uluslararası futbol maçı verilerinden yola çıkarak **"ev sahibi takım kazanır mı?"** sorusunu makine öğrenmesiyle tahmin eden uçtan uca bir proje. Veri yükleme → keşifsel analiz (EDA) → istatistik → görselleştirme → özellik mühendisliği → model eğitimi → metrik karşılaştırma → özellik önemi → karar ağacı görselleştirme → özet rapor adımlarından oluşan 11 adımlı bir pipeline ve bunu interaktif kullanmak için bir **Gradio arayüzü** içerir.
 
 ## Sonuçlar
 
@@ -69,10 +77,10 @@ python3 12_gelismis_ozellikler.py
 
 Ortak veri hazırlık mantığı (`tur_tipi`, Elo/form/h2h özellik mühendisliği, encoding, train/test split) `ortak.py` modülünde toplanmıştır; `06`–`12` arası adımlar bunu import eder.
 
-### İnteraktif Arayüz (Streamlit)
+### İnteraktif Arayüz (Gradio)
 
 ```bash
-streamlit run streamlit_app.py
+python app.py
 ```
 
 4 sekme sunar:
@@ -96,10 +104,10 @@ streamlit run streamlit_app.py
 ```
 01-12_*.py           Pipeline adımları (sırayla çalıştırılır)
 ortak.py              Ortak veri hazırlık + Elo/form/h2h özellik mühendisliği (DRY)
-streamlit_app.py       İnteraktif web arayüzü
+app.py                 İnteraktif web arayüzü (Gradio)
 *.csv                 Veri setleri
 *.png                 Pipeline çalıştırıldığında üretilen grafikler
-screenshots/           Streamlit arayüzü ekran görüntüleri
+screenshots/           Arayüz ekran görüntüleri
 DOKUMAN.md             Adım adım detaylı teknik dokümantasyon
 ```
 
